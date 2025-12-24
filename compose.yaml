@@ -1,6 +1,7 @@
 services:
   db:
     image: mysql:8.0
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -14,8 +15,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  
+  
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: my_app_db
+      DB_USER: api_user
+      DB_PASS: user_password
+    restart: unless-stopped
+
 
 volumes:
-    mysql_data:
+  mysql_data:
 
 
