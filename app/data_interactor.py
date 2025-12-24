@@ -1,4 +1,8 @@
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Contact:
     def __init__(self,id:int, first_name:str, last_name:str, phone_number:str):
@@ -13,14 +17,14 @@ class Contact:
                 "last_name":self.last_name,
                 "phone_number":self.phone_number
                 }
-    
+
 def get_connection():
     return mysql.connector.connect(
-        host="localhost",
-        port=3306,
-        user="root",         
-        password="" ,
-        database="contacts_db"
+        host=os.getenv("DB_HOST"),
+        port=int(os.getenv("DB_PORT", 3306)),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
         )
 
 def create_contact(first_name, last_name, phone_number):
@@ -64,7 +68,7 @@ def delete_contact(id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = "DELETE FROM contacts WHERE id = %s"
-    cursor.execute(sql, (id,))
+    cursor.execute(sql,                                                                                                                                                          (id,))
     conn.commit()
     success = cursor.rowcount > 0
     cursor.close()
