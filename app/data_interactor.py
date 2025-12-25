@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector import Error
 import os
 from dotenv import load_dotenv
 
@@ -23,55 +24,73 @@ def get_connection():
         host=os.getenv("DB_HOST"),
         port=int(os.getenv("DB_PORT", 3306)),
         user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
+        password=os.getenv("DB_PASS"),
         database=os.getenv("DB_NAME")
         )
 
 def create_contact(first_name, last_name, phone_number):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "INSERT INTO contacts (first_name, last_name, phone_number) VALUES (%s, %s, %s)"
-    cursor.execute(sql, (first_name, last_name, phone_number)) 
-    conn.commit()
-    new_id = cursor.lastrowid
-    cursor.close()
-    conn.close()
-    return new_id
+    try:
+        sql = "INSERT INTO contacts (first_name, last_name, phone_number) VALUES (%s, %s, %s)"
+        cursor.execute(sql, (first_name, last_name, phone_number)) 
+        conn.commit()
+        new_id = cursor.lastrowid
+        return new_id
+    except Error as e:
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+    
 
 def get_all_contacts():
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "SELECT id, first_name, last_name, phone_number FROM contacts"
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    contacts_list = []
-    for row in rows:
-        contact_objects = Contact(row[0], row[1], row[2], row[3])
-        contacts_list.append(contact_objects)
-    cursor.close()
-    conn.close()
-    return contacts_list
+    try:
+        sql = "SELECT id, first_name, last_name, phone_number FROM contacts"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        contacts_list = []
+        for row in rows:
+            contact_objects = Contact(row[0], row[1], row[2], row[3])
+            contacts_list.append(contact_objects)
+        return contacts_list
+    except Error as e:
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+
     
 
 def update_contact(id, first_name, last_name, phone_number):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "UPDATE contacts SET first_name=%s, last_name=%s, phone_number=%s WHERE id=%s"
-    cursor.execute(sql, (first_name, last_name, phone_number, id))
-    conn.commit()
-    success = cursor.rowcount > 0
-    cursor.close()
-    conn.close()
-    return success
+    try:
+        sql = "UPDATE contacts SET first_name=%s, last_name=%s, phone_number=%s WHERE id=%s"
+        cursor.execute(sql, (first_name, last_name, phone_number, id))
+        conn.commit()
+        success = cursor.rowcount > 0
+        return success
+    except Error as e:
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
 
 def delete_contact(id):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "DELETE FROM contacts WHERE id = %s"
-    cursor.execute(sql,                                                                                                                                                          (id,))
-    conn.commit()
-    success = cursor.rowcount > 0
-    cursor.close()
-    conn.close()
-    return success
+    try:
+        sql = "DELETE FROM contacts WHERE id = %s"
+        cursor.execute(sql,                                                                                                                                                          (id,))
+        conn.commit()
+        success = cursor.rowcount > 0
+        return success
+    except Error as e:
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
        

@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.0
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -27,9 +27,9 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      DB_NAME: my_app_db
-      DB_USER: api_user
-      DB_PASS: user_password
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASSWORD}
     restart: unless-stopped
 
 
